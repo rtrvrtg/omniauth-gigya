@@ -1,3 +1,4 @@
+require 'gigya_api'
 require 'omniauth'
 require 'rack/utils'
 
@@ -12,7 +13,7 @@ module OmniAuth
 
       def callback_phase
         request = Rack::Request.new env
-        client = Gigya::Socialize.new api_key: options.api_key, secret: options.secret
+        client = GigyaApi::Socialize.new api_key: options.api_key, secret: options.secret
         code = request.params['authCode']
         resp = client.get_token grant_type: "authorization_code", code: code
         if resp['statusCode'] == 200
