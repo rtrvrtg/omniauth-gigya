@@ -22,7 +22,7 @@ module OmniAuth
           unless user['statusCode'] == 200
             return user
           else
-            raise AuthorizationError, "Error getting user: #{resp.to_s}"
+            raise AuthorizationError, "Error getting user: #{user.to_s}"
           end
         else
           raise AuthorizationError, "Error getting auth: #{resp.to_s}"
