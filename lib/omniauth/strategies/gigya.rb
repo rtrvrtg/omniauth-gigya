@@ -27,7 +27,7 @@ module OmniAuth
         else
           raise AuthorizationError, "Error getting auth: #{resp.to_s}"
         end
-        super
+        @app.call(env)
       end
 
     end
