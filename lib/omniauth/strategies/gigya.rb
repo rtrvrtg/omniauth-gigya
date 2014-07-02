@@ -16,7 +16,7 @@ module OmniAuth
           token = resp['access_token']
           user = client.get_user_info oauth_token: token
           unless user['statusCode'] == 200
-            return use
+            return user
           else
             raise AuthorizationError, "Error getting user: #{resp.to_s}"
           end
