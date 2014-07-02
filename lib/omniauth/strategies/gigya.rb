@@ -1,3 +1,6 @@
+require 'omniauth'
+require 'rack/utils'
+
 module OmniAuth
   module Strategies
     class Gigya
