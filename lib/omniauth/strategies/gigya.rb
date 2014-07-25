@@ -21,6 +21,7 @@ module OmniAuth
           user = client.get_user_info oauth_token: token
           if user['statusCode'] == 200
             env['omniauth.gigya'] = user
+            env['omniauth.gigya.oauth_token'] = token
           else
             raise AuthorizationError, "Error getting user: #{user.to_s}"
           end
