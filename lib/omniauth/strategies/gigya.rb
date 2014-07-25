@@ -17,11 +17,11 @@ module OmniAuth
         code = request.params['authCode']
         resp = client.get_token grant_type: "authorization_code", code: code
         if resp['statusCode'] == 200
-          token = resp['access_token']
-          user = client.get_user_info oauth_token: token
+          user = client.get_user_info oauth_token: resp['access_token']
           if user['statusCode'] == 200
             env['omniauth.gigya'] = user
-            env['omniauth.gigya.oauth_token'] = token
+            env['omniauth.gigya.oauth_token'] = resp['access_token']
+            env['omniauth.gigya.oauth_token_expires'] = resp['expires_in']
           else
             raise AuthorizationError, "Error getting user: #{user.to_s}"
           end
