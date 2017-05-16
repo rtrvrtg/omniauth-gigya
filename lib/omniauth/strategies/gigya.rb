@@ -11,6 +11,20 @@ module OmniAuth
 
       args [:api_key, :secret]
 
+      def request_phase
+        if env['REQUEST_METHOD'] == 'GET'
+          if @configuration.use_sessions? && request.cookies[@configuration.session_cookie]
+            redirect callback_url
+          else            
+            get_credentials
+          end
+        elsif (env['REQUEST_METHOD'] == 'POST') && (not request.params['username'])
+          get_credentials
+        else
+          redirect callback_url
+        end
+      end
+
       def callback_phase
         request = Rack::Request.new env
         client = GigyaApi::Socialize.new api_key: options.api_key, secret: options.secret
@@ -29,6 +43,13 @@ module OmniAuth
           raise AuthorizationError, "Error getting auth: #{resp.to_s}"
         end
         @app.call(env)
+      end
+
+      def get_credentials
+        configuration = @configuration
+        OmniAuth::Form.build(:title => (options[:title] || "Crowd Authentication")) do
+          html '<script src="//cdn.gigya.com/JS/socialize.js?apikey=' + options.api_key. + '"></script>'
+        end.to_response
       end
 
     end
