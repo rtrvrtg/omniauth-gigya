@@ -1,7 +1,17 @@
-# Uses custom markup and CSS for login form.
-# @see https://medium.com/makit/styling-omniauth-forms-using-rails-asset-pipeline-6af352025e53
+# frozen_string_literal: true
+
+# Variation of form page that doesn't have a form.
 module OmniAuth
   class PageWithoutForm < OmniAuth::Form
+    def self.build(options = {}, &block)
+      form = OmniAuth::PageWithoutForm.new(options)
+      if block.arity > 0
+        yield form
+      else
+        form.instance_eval(&block)
+      end
+      form
+    end
 
     def header(title, header_info)
       @html << <<-HTML

@@ -1,7 +1,10 @@
+# frozen_string_literal: true
+
 require 'gigya_api'
 require 'omniauth'
 require 'rack/utils'
 
+# Defines the Gigya auth strategy.
 module OmniAuth
   module Strategies
     class Gigya
@@ -95,7 +98,7 @@ module OmniAuth
           '    callback: Callbacks.onGetUserInfo',
           '  });',
           '};',
-          'Commands.showLogin = () => {',
+          'Commands.showLogin = function() {',
           '  if (!!loginDiv) {',
           '    gigya.accounts.showScreenSet({',
           '      screenSet: "' + options.screen_set + '",',
