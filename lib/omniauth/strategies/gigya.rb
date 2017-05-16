@@ -10,14 +10,16 @@ module OmniAuth
       class AuthorizationError < StandardError; end
 
       args [:api_key, :secret]
+      option :api_key, nil
+      option :secret, nil
+      option :title, nil
+      option :screen_set, nil
+      option :mobile_screen_set, nil
+      option :start_screen
 
       def request_phase
         if env['REQUEST_METHOD'] == 'GET'
-          if @configuration.use_sessions? && request.cookies[@configuration.session_cookie]
-            redirect callback_url
-          else            
-            get_credentials
-          end
+          get_credentials
         elsif (env['REQUEST_METHOD'] == 'POST') && (not request.params['username'])
           get_credentials
         else
@@ -46,12 +48,67 @@ module OmniAuth
       end
 
       def get_credentials
-        configuration = @configuration
-        OmniAuth::Form.build(:title => (options[:title] || "Crowd Authentication")) do
-          html '<script src="//cdn.gigya.com/JS/socialize.js?apikey=' + options.api_key + '"></script>'
+        api_key = options.api_key
+        login_js = generate_login_js
+        OmniAuth::PageWithoutForm.build(title: (options.title || "Gigya Authentication")) do
+          html '<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>'
+          html '<script type="text/javascript" src="//cdn.gigya.com/JS/socialize.js?apikey=' + api_key + '"></script>'
+          html '<div id="gigya-screenset-container"></div>'
+          html '<script type="text/javascript">' + login_js + '</script>'
         end.to_response
       end
 
+      def generate_login_js
+        [
+          '(function() {',
+          'var gigya = null;',
+          'var loginDiv = document.querySelector("#gigya-screenset-container");',
+          'var Callbacks = {};',
+          'var Commands = {};',
+          'Callbacks.onGetUserInfo = function(data) {',
+          '  if (data.status == "OK" && !!data.user && !!data.user.UID) {',
+          '    console.log(data);',
+          '  }',
+          '  else {',
+          '    Commands.showLogin();',
+          '  }',
+          '};',
+          'Callbacks.onLoad = function() {',
+          '  var deferGigya = $.Deferred();',
+          '  var interval = setInterval(function() {',
+          '    if (!!window.gigya) {',
+          '      deferGigya.resolve(window.gigya);',
+          '      clearInterval(interval);',
+          '    }',
+          '  }, 100);',
+          '  $.when(deferGigya).done(function(promisedGigya) {',
+          '    gigya = promisedGigya;',
+          '    Commands.init();',
+          '  }).promise();',
+          '};',
+          'Commands.init = function() {',
+          '  gigya.accounts.addEventHandlers({',
+          '    onLogin: Callbacks.onLogin,',
+          '    onLogout: Callbacks.onLogout',
+          '  });',
+          '  gigya.services.socialize.getUserInfo({',
+          '    callback: Callbacks.onGetUserInfo',
+          '  });',
+          '};',
+          'Commands.showLogin = () => {',
+          '  if (!!loginDiv) {',
+          '    gigya.accounts.showScreenSet({',
+          '      screenSet: "' + options.screen_set + '",',
+          '      mobileScreenSet: "' + options.mobile_screen_set + '",',
+          '      startScreen: "' + options.start_screen + '",',
+          '      containerID: "gigya-screenset-container"',
+          '    });',
+          '  }',
+          '};',
+          '$(document).ready(Callbacks.onLoad);',
+          '})();',
+        ].join("\n")
+      end
     end
   end
 end
