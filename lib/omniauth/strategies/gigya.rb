@@ -48,7 +48,7 @@ module OmniAuth
       def get_credentials
         configuration = @configuration
         OmniAuth::Form.build(:title => (options[:title] || "Crowd Authentication")) do
-          html '<script src="//cdn.gigya.com/JS/socialize.js?apikey=' + options.api_key. + '"></script>'
+          html '<script src="//cdn.gigya.com/JS/socialize.js?apikey=' + options.api_key + '"></script>'
         end.to_response
       end
 
